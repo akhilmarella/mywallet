@@ -2,6 +2,7 @@ package main
 
 import (
 	"mywallet/config"
+	"mywallet/db"
 	"mywallet/handlers"
 
 	"github.com/gin-gonic/gin"
@@ -9,11 +10,13 @@ import (
 )
 
 func main() {
-	_, err := config.LoadConfig()
+
+	conf, err := config.LoadConfig()
 	if err != nil {
 		log.Error().Err(err).Msg("error in loadingConfig")
 		return
 	}
+	db.InitDB(conf)
 
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
