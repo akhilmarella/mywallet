@@ -1,23 +1,29 @@
 package db
 
 import (
+	"fmt"
+	"mywallet/config"
+	"os"
+
 	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 )
 
 var DB *gorm.DB
 
-func InitDB() {
-	// db, err := gorm.Open("postgres", fmt.Sprintf(
-	// 	"host=%s port=%v dbname=%s user=%s password=%s sslmode=disable",
-	// 	"localhost",
-	// 	"5432",
-	// 	"golang",
-	// 	"akhil",
-	// 	"marella12",
-	// ))
-	// if err!=nil{
-	// 	log.Println("DB init fail",err)
-	// 	os.Exit(1)
-	// }
-
+func InitDB(conf config.Configuration) {
+	db, err := gorm.Open("postgres", fmt.Sprintf(
+		"host=%s port=%v dbname=%s user=%s password=%s sslmode=disable",
+		conf.Db.Host,
+		conf.Db.Port,
+		conf.Db.Name,
+		conf.Db.User,
+		conf.Db.Password,
+	))
+	if err != nil {
+		log.Error().Err(err).Msg("DB init fail")
+		os.Exit(1)
+	}
+	DB = db
 }

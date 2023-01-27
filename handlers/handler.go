@@ -9,5 +9,5 @@ import (
 func HealthCheck(c *gin.Context) {
 	t := time.Now()
 	// fmt.Println("current time:",t)
-	c.JSON(200, t)
+	c.JSON(200,t)
 }

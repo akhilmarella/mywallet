@@ -5,10 +5,10 @@ import (
 )
 
 type Configuration struct {
-	DB
+	Db Database
 }
 
-type DB struct {
+type Database struct {
 	Host     string
 	Port     string
 	Name     string
@@ -23,7 +23,7 @@ func LoadConfig() (Configuration, error) {
 	}
 
 	return Configuration{
-		DB: DB{
+		Db: Database{
 			Host:     "localhost",
 			Port:     "5432",
 			Name:     "golang",
