@@ -20,6 +20,7 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
+	router.POST("/vendor-register", handlers.VendorRegister)
 
 	router.Run("localhost:8080")
 }
