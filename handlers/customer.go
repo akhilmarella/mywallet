@@ -6,22 +6,23 @@ import (
 	"mywallet/utils"
 	"net/http"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
-type VendorRegisterRequest struct {
-	CompanyName     string `json:"company_name"`
-	Name            string `json:"name"`
-	Email           string `json:"email"`
+type CustomerRegisterReq struct {
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	UserName        string `json:"user_name"`
 	PhoneNumber     string `json:"phone_number"`
+	DOB             string `json:"dob"`
+	Email           string `json:"email"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirm_password"`
 }
 
-func VendorRegister(c *gin.Context) {
-	var req VendorRegisterRequest
+func CustomerRegister(c *gin.Context) {
+	var req CustomerRegisterReq
 
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
@@ -60,27 +61,29 @@ func VendorRegister(c *gin.Context) {
 		return
 	}
 
-	var new models.Vendor
-	new.CompanyName = req.CompanyName
-	new.Name = req.Name
+	var new models.Customer
+	new.FirstName = req.FirstName
+	new.LastName = req.LastName
+	new.UserName = req.UserName
 	new.Email = req.Email
 	new.PhoneNumber = req.PhoneNumber
-	vendorID, err := db.AddVendor(new)
+	new.DOB = req.DOB
+
+	customerID, err := db.AddCustomer(new)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": "error in adding vendor"})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "error in adding customer"})
 		return
 	}
 
 	pass, err := utils.HashPassword(req.Password)
 	if err != nil {
-		log.Error().Err(err).Any("password", pass).Msg("error in hashing password")
+		log.Error().Err(err).Any("password", req.Password).Msg("error in hashing password")
 		return
 	}
 
-	// after registered the vendor details,rewrite the vendorid in accountid
 	var auth models.AuthDetails
-	auth.UserType = "vendor"
-	auth.AccountID = vendorID
+	auth.UserType = "customer"
+	auth.AccountID = customerID
 	auth.Email = req.Email
 	auth.Password = pass
 

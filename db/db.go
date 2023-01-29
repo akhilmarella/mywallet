@@ -26,7 +26,7 @@ func InitDB(conf config.Configuration) {
 		log.Error().Err(err).Msg("DB init fail")
 		os.Exit(1)
 	}
-	err = db.Debug().AutoMigrate(models.Vendor{}, models.AuthDetails{}).Error
+	err = db.Debug().AutoMigrate(models.Vendor{}, models.AuthDetails{},models.Customer{}).Error
 	if err != nil {
 		log.Error().Err(err).Msg("error in AutoMigrate Table")
 		return

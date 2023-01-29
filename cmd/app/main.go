@@ -21,6 +21,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
 	router.POST("/vendor-register", handlers.VendorRegister)
+	router.POST("/customer-register", handlers.CustomerRegister)
 
 	router.Run("localhost:8080")
 }

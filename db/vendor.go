@@ -42,20 +42,6 @@ func AddVendor(vendor models.Vendor) (uint64, error) {
 }
 
 func AddAuth(auth models.AuthDetails) error {
-	var check RegCheck
-	em := DB.Raw("select email from auth_details where email = ?", auth.Email).Scan(&check)
-	if em.Error != nil && em.Error != gorm.ErrRecordNotFound {
-		log.Error().Err(em.Error).Any("email", check).
-			Msg("error in email")
-		return em.Error
-	}
-
-	if check.Email != "" {
-		log.Error().Any("email", check).
-			Msg("already registered")
-		return fmt.Errorf("email is already exist :%v", check.Email)
-	}
-
 	auth.CreatedAt = time.Now()
 	tx := DB.Create(&auth).Model(models.AuthDetails{})
 	if tx.Error != nil {
@@ -66,4 +52,3 @@ func AddAuth(auth models.AuthDetails) error {
 
 	return nil
 }
-
