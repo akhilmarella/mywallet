@@ -71,18 +71,14 @@ func VendorRegister(c *gin.Context) {
 		return
 	}
 
-	pass, err := utils.HashPassword(req.Password)
-	if err != nil {
-		log.Error().Err(err).Any("password", pass).Msg("error in hashing password")
-		return
-	}
+	
 
 	// after registered the vendor details,rewrite the vendorid in accountid
 	var auth models.AuthDetails
 	auth.UserType = "vendor"
 	auth.AccountID = vendorID
 	auth.Email = req.Email
-	auth.Password = pass
+	auth.Password = req.Password
 
 	if error := db.AddAuth(auth); error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "error in adding author"})

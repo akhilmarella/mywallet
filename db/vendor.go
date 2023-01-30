@@ -52,3 +52,32 @@ func AddAuth(auth models.AuthDetails) error {
 
 	return nil
 }
+
+func ReadUser(email, password, role string) (uint64, error) {
+	var new models.AuthDetails
+	tx := DB.Raw("select * from auth_details where email = ? ", email).Scan(&new)
+	if tx.Error != nil && tx.Error != gorm.ErrRecordNotFound {
+		log.Error().Err(tx.Error).Any("email", new).
+			Msg("error in fetching details")
+		return 0, tx.Error
+	}
+
+	if email != new.Email {
+		log.Error().Any("email", new.Email).Msg("email not found")
+		return 0, fmt.Errorf("email is incorrect %v ", email)
+	}
+
+	if role != new.UserType {
+		log.Error().Any("usertype", new.UserType).Any("email", new.Email).
+			Any("id", new.ID).Msg("usertype is incorrect")
+		return 0, fmt.Errorf("usertype is wrong")
+	}
+
+	if password != new.Password {
+		log.Error().Any("password", new.Password).Any("req_password:",password).
+			Msg("password is incorrect")
+		return 0, fmt.Errorf("password is wrong")
+	}
+
+	return new.ID, nil
+}
