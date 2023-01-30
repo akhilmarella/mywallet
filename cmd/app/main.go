@@ -22,6 +22,7 @@ func main() {
 	router.GET("/", handlers.HealthCheck)
 	router.POST("/vendor-register", handlers.VendorRegister)
 	router.POST("/customer-register", handlers.CustomerRegister)
+	router.POST("/login", handlers.Login)
 
 	router.Run("localhost:8080")
 }

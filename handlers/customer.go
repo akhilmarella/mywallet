@@ -75,18 +75,12 @@ func CustomerRegister(c *gin.Context) {
 		return
 	}
 
-	pass, err := utils.HashPassword(req.Password)
-	if err != nil {
-		log.Error().Err(err).Any("password", req.Password).Msg("error in hashing password")
-		return
-	}
-
 	var auth models.AuthDetails
 	auth.UserType = "customer"
 	auth.AccountID = customerID
 	auth.Email = req.Email
-	auth.Password = pass
-
+	auth.Password = req.Password
+	
 	if error := db.AddAuth(auth); error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "error in adding author"})
 		return
