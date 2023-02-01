@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"mywallet/db"
+	"mywallet/store"
 	"mywallet/utils"
 	"net/http"
 
@@ -69,11 +70,17 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenJWT(req.Email, role, id)
+	tokenDetails, err := utils.CreateToken(req.Email, role, id)
 	if err != nil {
 		c.JSON(http.StatusFailedDependency, gin.H{"message": "error in token"})
 		return
 	}
-
-	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
+	err = store.AddToken(id, tokenDetails)
+	if err != nil {
+		log.Error().Err(err).Any("id", id).Any("token_detais", tokenDetails).
+			Msg("error in token details")
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error in token details"})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, gin.H{"token": tokenDetails})
 }
