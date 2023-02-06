@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"mywallet/api"
 	"mywallet/db"
 	"mywallet/models"
 	"mywallet/utils"
@@ -11,17 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type VendorRegisterRequest struct {
-	CompanyName     string `json:"company_name"`
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	PhoneNumber     string `json:"phone_number"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-}
-
 func VendorRegister(c *gin.Context) {
-	var req VendorRegisterRequest
+	var req api.VendorRegisterRequest
 
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
@@ -74,7 +66,7 @@ func VendorRegister(c *gin.Context) {
 	new.PhoneNumber = req.PhoneNumber
 	vendorID, err := db.AddVendor(new)
 	if err != nil {
-		log.Error().Err(err).Any("vendor details", new).
+		log.Error().Err(err).Any("vendor_details", new).
 			Msg("error in adding vendor details")
 		c.JSON(http.StatusInternalServerError, gin.H{"msg": "error in adding vendor details"})
 		return
@@ -95,4 +87,3 @@ func VendorRegister(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "created"})
 }
-

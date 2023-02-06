@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"mywallet/api"
 	"strconv"
 	"time"
 
@@ -14,19 +15,10 @@ var accessSecretKey = []byte("nooneneedtoknow")
 
 var refreshSecretKey = []byte("nothing")
 
-type TokenDetails struct {
-	AccessToken   string
-	AccessID      string
-	RefreshToken  string
-	RefreshID     string
-	AccessExpiry  int64
-	RefreshExpiry int64
-}
-
-func CreateToken(email, role string, id uint64) (*TokenDetails, error) {
-	td := &TokenDetails{}
+func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
+	td := &api.TokenDetails{}
 	td.AccessID = uuid.NewV4().String()
-	td.AccessExpiry = time.Now().Add(time.Hour * 1).Unix()
+	td.AccessExpiry = time.Now().Add(time.Minute * 30).Unix()
 
 	td.RefreshID = td.AccessID + "_" + strconv.Itoa(int(id))
 	td.RefreshExpiry = time.Now().Add(time.Hour * 24 * 24).Unix()

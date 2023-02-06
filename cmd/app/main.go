@@ -5,6 +5,7 @@ import (
 	"mywallet/db"
 	"mywallet/handlers"
 	"mywallet/middleware"
+	"mywallet/store"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -18,13 +19,15 @@ func main() {
 		return
 	}
 	db.InitDB(conf)
-
+	store.InitRedis()
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
 	router.POST("/vendor-register", handlers.VendorRegister)
+
 	router.POST("/customer-register", handlers.CustomerRegister)
+
 	router.POST("/login", handlers.Login)
 	router.PUT("/reset", middleware.IsAuthorized(), handlers.ResetPassword)
-
+	router.POST("/refresh", handlers.RefreshToken)
 	router.Run("localhost:8080")
 }

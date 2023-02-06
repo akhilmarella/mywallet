@@ -27,12 +27,7 @@ type Vendor struct {
 // 	LastUpdated time.Time
 // }
 
-type AuthDetails struct {
-	ID          uint64 `gorm:"primary_key;auto_increment;not_null"`
-	UserType    string
-	AccountID   uint64
-	Email       string
-	Password    string
-	CreatedAt   time.Time
-	LastUpdated time.Time
+type Check struct {
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
 }
