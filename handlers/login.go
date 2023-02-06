@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"mywallet/api"
 	"mywallet/db"
 	"mywallet/store"
 	"mywallet/utils"
@@ -11,13 +12,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type LoginReq struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func Login(c *gin.Context) {
-	var req LoginReq
+	var req api.LoginReq
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
 			Msg("eror in unmarshaling")
@@ -35,8 +31,6 @@ func Login(c *gin.Context) {
 		msg = "empty value in User-Type header"
 		Error = fmt.Errorf(msg)
 	case "vendor", "customer":
-		//	msg = ""
-		//	Error = nil
 		break
 	default:
 		msg = fmt.Sprintf("invalid User-Type: %v", role)
@@ -65,6 +59,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "error in login"})
 		return
 	}
+
 	if err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"messsage": "wrong password"})
 		return
@@ -75,6 +70,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusFailedDependency, gin.H{"message": "error in token"})
 		return
 	}
+
 	err = store.AddToken(id, tokenDetails)
 	if err != nil {
 		log.Error().Err(err).Any("id", id).Any("token_detais", tokenDetails).
@@ -82,5 +78,6 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error in token details"})
 		return
 	}
+
 	c.IndentedJSON(http.StatusOK, gin.H{"token": tokenDetails})
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"mywallet/api"
 	"mywallet/db"
 	"mywallet/utils"
 	"net/http"
@@ -9,14 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type ResetAuthPassword struct {
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-}
-
 func ResetPassword(c *gin.Context) {
-	var req ResetAuthPassword
+	var req api.ResetAuthPassword
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
 			Msg("error in unmarshaling")

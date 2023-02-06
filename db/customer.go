@@ -9,14 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type Check struct {
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phone_number"`
-}
+
 
 func AddCustomer(customer models.Customer) (uint64, error) {
 	customer.CreatedAt = time.Now()
-	var check Check
+	var check models.Check
 
 	em := DB.Raw("select email from customers where email = ?", customer.Email).Scan(&check)
 	if em.Error != nil && em.Error != gorm.ErrRecordNotFound {

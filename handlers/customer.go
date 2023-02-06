@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"mywallet/api"
 	"mywallet/db"
 	"mywallet/models"
 	"mywallet/utils"
@@ -10,19 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type CustomerRegisterReq struct {
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	UserName        string `json:"user_name"`
-	PhoneNumber     string `json:"phone_number"`
-	DOB             string `json:"dob"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
-}
-
 func CustomerRegister(c *gin.Context) {
-	var req CustomerRegisterReq
+	var req api.CustomerRegisterReq
 
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
