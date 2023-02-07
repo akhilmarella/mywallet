@@ -32,8 +32,26 @@ func AddToken(id uint64, tokenDetails *api.TokenDetails) error {
 func DeleteRefreshID(refreshID string) (int64, error) {
 	deleted, err := Client.Del(refreshID).Result()
 	if err != nil {
-		log.Error().Err(err).Any("id", deleted).Msg("error in id")
+		log.Error().Err(err).Any("id", deleted).Msg("error in deleting refresh id")
 		return 0, err
 	}
 	return deleted, nil
+}
+
+func DeleteTokens(accessID string, id uint64) (int64, int64, error) {
+	refreshID := accessID + "_" + strconv.Itoa(int(id))
+
+	deleteAccessID, err := Client.Del(accessID).Result()
+	if err != nil || deleteAccessID == 0 {
+		log.Error().Err(err).Any("id", deleteAccessID).Msg("error in deleting access id")
+		return deleteAccessID, 0, err
+	}
+
+	deleteRefreshID, err := Client.Del(refreshID).Result()
+	if err != nil || deleteRefreshID == 0 {
+		log.Error().Err(err).Any("id", deleteRefreshID)
+		return 0, deleteRefreshID, err
+	}
+
+	return deleteAccessID, deleteRefreshID, nil
 }
