@@ -43,6 +43,7 @@ func RefreshToken(token string) (*api.TokenDetails, error) {
 				Msg("refresh id is not found")
 			return nil, fmt.Errorf("refresh id is not there")
 		}
+
 		email, ok := claims["email"].(string)
 		if !ok {
 			log.Error().Any("email", email).
@@ -56,18 +57,17 @@ func RefreshToken(token string) (*api.TokenDetails, error) {
 				Msg("error in role")
 			return nil, err
 		}
+
 		splitID := strings.Split(refreshID, "_")
 		id := splitID[1]
 		newID, err := strconv.ParseUint(id, 10, 64)
-
 		if err != nil {
-			log.Error().Any("id", id).
+			log.Error().Any("id", newID).
 				Msg("error in id")
 			return nil, err
 		}
 
 		deleted, delErr := store.DeleteRefreshID(refreshID)
-
 		if delErr != nil || deleted == 0 {
 			log.Error().Err(delErr).Any("deleted_ID", deleted).Any("refresh_id", refreshID).
 				Msg("error in deleting refresh ID")
@@ -88,6 +88,7 @@ func RefreshToken(token string) (*api.TokenDetails, error) {
 			return nil, err
 		}
 		return newTokenDetails, nil
+
 	}
 	return nil, fmt.Errorf("error in refresh token")
 }

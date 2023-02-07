@@ -57,3 +57,5 @@ func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
 	}
 	return td, nil
 }
+
+
