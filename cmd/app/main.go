@@ -26,9 +26,13 @@ func main() {
 
 	router.POST("/customer-register", handlers.CustomerRegister)
 
+	router.POST("/update-address", middleware.IsAuthorized(), handlers.UpdateAddress)
+
+
 	router.POST("/login", handlers.Login)
 	router.PUT("/reset", middleware.IsAuthorized(), handlers.ResetPassword)
 	router.POST("/refresh", handlers.RefreshToken)
 	router.DELETE("/remove", handlers.Logout)
+
 	router.Run("localhost:8080")
 }

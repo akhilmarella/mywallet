@@ -21,6 +21,8 @@ func ResetPassword(c *gin.Context) {
 
 	role := c.Writer.Header().Get("role")
 	if role == "" {
+		log.Error().Any("role", role).
+			Msg("empty in role")
 		return
 	}
 

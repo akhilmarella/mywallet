@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 var mySigningKey = []byte("nooneneedtoknow")
@@ -22,15 +23,27 @@ func IsAuthorized() gin.HandlerFunc {
 			})
 
 			if err != nil {
-				log.Printf("invalid token")
+				log.Error().Err(err).Any("token", token).
+					Msg("error in invalid ttoken")
 				c.Abort()
 			}
-			
+
 			if token.Valid {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+					userID_f, ok := claims["id"].(float64)
+					if !ok {
+						log.Error().Any("user_id", userID_f).
+							Msg("user id not found")
+						return
+					}
+
+					userID := strconv.FormatFloat(userID_f, 'g', 1, 64)
+
 					if claims["role"] == "vendor" {
+						c.Writer.Header().Add("user_id", userID)
 						c.Writer.Header().Add("role", "vendor")
 					} else if claims["role"] == "customer" {
+						c.Writer.Header().Add("user_id", userID)
 						c.Writer.Header().Add("role", "customer")
 					}
 				}
@@ -39,7 +52,7 @@ func IsAuthorized() gin.HandlerFunc {
 				c.AbortWithError(http.StatusNotAcceptable, fmt.Errorf(" token is not valid"))
 			}
 		} else {
-			log.Println("No token")
+			log.Error().Msg("empty in header")
 			c.IndentedJSON(400, gin.H{"message": "missing header in token"})
 			c.AbortWithError(400, fmt.Errorf("no token in header"))
 		}
