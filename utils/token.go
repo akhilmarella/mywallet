@@ -15,7 +15,7 @@ var accessSecretKey = []byte("nooneneedtoknow")
 
 var refreshSecretKey = []byte("nothing")
 
-func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
+func CreateToken(email, role string, id int64) (*api.TokenDetails, error) {
 	td := &api.TokenDetails{}
 	td.AccessID = uuid.NewV4().String()
 	td.AccessExpiry = time.Now().Add(time.Minute * 30).Unix()
@@ -27,7 +27,7 @@ func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
 	accessClaims := jwt.MapClaims{}
 	accessClaims["authorized"] = true
 	accessClaims["email"] = email
-	accessClaims["id"] = id
+	accessClaims["auth_id"] = id
 	accessClaims["role"] = role
 	accessClaims["exp"] = td.AccessExpiry
 	accessClaims["access_id"] = td.AccessID
@@ -36,7 +36,9 @@ func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
 	access := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
 	td.AccessToken, err = access.SignedString(accessSecretKey)
 	if err != nil {
-		log.Error().Err(err).Msg("error in access token")
+		log.Error().Err(err).
+			Any("action:", "utils_token.go_CreateTokenToken").
+			Msg("error in access token")
 		return nil, err
 	}
 
@@ -44,7 +46,7 @@ func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
 	refreshClaims := jwt.MapClaims{}
 	refreshClaims["authorized"] = true
 	refreshClaims["email"] = email
-	refreshClaims["id"] = id
+	refreshClaims["auth_id"] = id
 	refreshClaims["role"] = role
 	refreshClaims["exp"] = td.RefreshExpiry
 	refreshClaims["refresh_id"] = td.RefreshID
@@ -52,10 +54,10 @@ func CreateToken(email, role string, id uint64) (*api.TokenDetails, error) {
 	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 	td.RefreshToken, err = refresh.SignedString(refreshSecretKey)
 	if err != nil {
-		log.Error().Err(err).Msg("error in refresh token")
+		log.Error().Err(err).
+			Any("action:", "utils_token.go_CreateTokenToken").
+			Msg("error in refresh token")
 		return nil, err
 	}
 	return td, nil
 }
-
-

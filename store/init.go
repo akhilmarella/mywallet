@@ -13,7 +13,9 @@ func InitRedis() {
 	})
 	_, err := Client.Ping().Result()
 	if err != nil {
-		log.Error().Err(err).Msg("error found in redis address")
+		log.Error().Err(err).
+			Any("action:", "store_init.go_InitRedis").
+			Msg("error found in redis address")
 		return
 	}
 }
