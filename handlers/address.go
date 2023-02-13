@@ -11,10 +11,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func UpdateAddress(c *gin.Context) {
+func AddressRegister(c *gin.Context) {
 	var req api.AddressRegisterRequest
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Any("req", req).
+			Any("action:", "handlers_addres.go_UpdateAddress").
 			Msg("error in unmarshal in address")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error in unmarshalling in address "})
 		return
@@ -23,21 +24,25 @@ func UpdateAddress(c *gin.Context) {
 	userType := c.Writer.Header().Get("role")
 	if userType == "" {
 		log.Error().Any("user_type", userType).
+			Any("action:", "handlers_addres.go_UpdateAddress").
 			Msg("empty header in usertype")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "empty found in header usertype"})
 		return
 	}
 
-	userID_f := c.Writer.Header().Get("user_id")
-	if userID_f == "" {
-		log.Error().Any("user_id", userID_f).Msg("empty header in user id")
+	authID_f := c.Writer.Header().Get("auth_id")
+	if authID_f == "" {
+		log.Error().Any("user_id", authID_f).
+			Any("action:", "handlers_addres.go_UpdateAddress").
+			Msg("empty header in user id")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "empty found in header userid"})
 		return
 	}
 
-	userID, err := strconv.ParseUint(userID_f, 10, 64)
+	authID, err := strconv.ParseInt(authID_f, 10, 64)
 	if err != nil {
-		log.Error().Err(err).Any("user_id", userID).
+		log.Error().Err(err).Any("auth_id", authID).
+			Any("action:", "handlers_addres.go_UpdateAddress").
 			Msg("error in converting  userid")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error in converting userid"})
 		return
@@ -51,10 +56,11 @@ func UpdateAddress(c *gin.Context) {
 	new.State = req.State
 	new.PinCode = req.PinCode
 	new.UserType = userType
-	new.UserID = userID
+	new.AuthID = authID
 
 	if err := db.AddAddress(new); err != nil {
 		log.Error().Err(err).Any("address_details", new).
+			Any("action:", "handlers_addres.go_UpdateAddress").
 			Msg("error in adding address details")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error in adding new address"})
 		return

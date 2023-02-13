@@ -12,12 +12,14 @@ import (
 )
 
 func main() {
-
 	conf, err := config.LoadConfig()
 	if err != nil {
-		log.Error().Err(err).Msg("error in loadingConfig")
+		log.Error().Err(err).
+			Any("action:", "cmd/app_main.go_main").
+			Msg("error in loadingConfig")
 		return
 	}
+
 	db.InitDB(conf)
 	store.InitRedis()
 	router := gin.Default()
@@ -26,8 +28,7 @@ func main() {
 
 	router.POST("/customer-register", handlers.CustomerRegister)
 
-	router.POST("/update-address", middleware.IsAuthorized(), handlers.UpdateAddress)
-
+	router.POST("/address-register", middleware.IsAuthorized(), handlers.AddressRegister)
 
 	router.POST("/login", handlers.Login)
 	router.PUT("/reset", middleware.IsAuthorized(), handlers.ResetPassword)

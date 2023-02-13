@@ -12,7 +12,9 @@ import (
 func RefreshToken(c *gin.Context) {
 	refreshToken := c.GetHeader("Refresh-Token")
 	if refreshToken == "" {
-		log.Error().Any("refresh_token", refreshToken).Msg("couldn't get token from header")
+		log.Error().Any("refresh_token", refreshToken).
+			Any("action:", "handlers_refresh.go_RefreshToken").
+			Msg("couldn't get token from header (or) refresh token is empty")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "couldn't get token"})
 		return
 	}
@@ -20,12 +22,14 @@ func RefreshToken(c *gin.Context) {
 	newTokenDetails, err := service.RefreshToken(refreshToken)
 	if err != nil {
 		log.Error().Err(err).Any("token_details_new", newTokenDetails).
+			Any("action:", "handlers_refresh.go_RefreshToken").
 			Msg("error in new token details")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error in token details"})
 		return
 	}
 
 	if newTokenDetails == nil {
+		log.Error().Any("action", "handlers_refresh.go_RefreshToken")
 
 		if newTokenDetails.AccessExpiry == 0 {
 			fmt.Println("empty access expiry found", newTokenDetails.AccessExpiry)

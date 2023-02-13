@@ -24,26 +24,29 @@ func IsAuthorized() gin.HandlerFunc {
 
 			if err != nil {
 				log.Error().Err(err).Any("token", token).
+					Any("action:", "middleware_token.go_IsAuthorized").
 					Msg("error in invalid ttoken")
 				c.Abort()
 			}
 
 			if token.Valid {
 				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-					userID_f, ok := claims["id"].(float64)
+					authID_f, ok := claims["auth_id"].(float64)
+
 					if !ok {
-						log.Error().Any("user_id", userID_f).
+						log.Error().Any("user_id", authID_f).
+					Any("action:", "middleware_token.go_IsAuthorized").
 							Msg("user id not found")
 						return
 					}
 
-					userID := strconv.FormatFloat(userID_f, 'g', 1, 64)
+					authID := strconv.FormatFloat(authID_f, 'g', 1, 64)
 
 					if claims["role"] == "vendor" {
-						c.Writer.Header().Add("user_id", userID)
+						c.Writer.Header().Add("auth_id", authID)
 						c.Writer.Header().Add("role", "vendor")
 					} else if claims["role"] == "customer" {
-						c.Writer.Header().Add("user_id", userID)
+						c.Writer.Header().Add("auth_id", authID)
 						c.Writer.Header().Add("role", "customer")
 					}
 				}
