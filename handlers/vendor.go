@@ -6,6 +6,7 @@ import (
 	"mywallet/models"
 	"mywallet/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/rs/zerolog/log"
 
@@ -96,4 +97,67 @@ func VendorRegister(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "created"})
+}
+
+func GetVendor(c *gin.Context) {
+	userType := c.Writer.Header().Get("role")
+	if userType != "vendor" {
+		log.Error().Any("user_type", userType).Any("auth_id", c.Writer.Header().Get("auth_id")).
+			Any("action", "handlers_vendor.go_GetVendor").Msg("unauthorized user")
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized user"})
+		return
+	}
+
+	id := c.Param("id")
+	if id == "" {
+		log.Error().Any("id", id).Any("action", "db_vendor.go_GetVendor").
+			Msg("id not found")
+		return
+	}
+
+	vendorID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Any("vendor_id", id).Any("action", "handlers_vendor.go_GetVendor").
+			Msg("error in converting id string to int64 ")
+		c.JSON(http.StatusNotFound, gin.H{"message": "error in converting id "})
+		return
+	}
+
+	vendor, err := db.GetVendor(vendorID)
+	if err != nil {
+		log.Error().Err(err).Any("id", id).Any("action", "handlers_vendor.go_GetVendor").
+			Msg("error  in id not found")
+		c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+		return
+	}
+
+	address, err := db.GetAddress(vendor.AddressID)
+	if err != nil {
+		log.Error().Err(err).Any("id", id).Any("action", "handlers_vendor.go_GetVendor").
+			Msg("error  in id not found")
+		c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+		return
+	}
+
+	res := api.VendorList{
+		ID:          vendorID,
+		CompanyName: vendor.CompanyName,
+		Name:        vendor.Name,
+		Email:       vendor.Email,
+		PhoneNumber: vendor.PhoneNumber,
+		AddressID: api.Address{
+			UserType:    address.UserType,
+			StreetNo:    address.StreetNo,
+			Area:        address.Area,
+			Place:       address.Place,
+			District:    address.District,
+			State:       address.State,
+			PinCode:     address.PinCode,
+			CreatedAt:   address.CreatedAt,
+			LastUpdated: address.LastUpdated,
+		},
+		CreatedAt:   vendor.CreatedAt,
+		LastUpdated: vendor.LastUpdated,
+	}
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": res})
 }

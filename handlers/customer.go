@@ -6,6 +6,7 @@ import (
 	"mywallet/models"
 	"mywallet/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -97,4 +98,69 @@ func CustomerRegister(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "created"})
+}
+
+func GetCustomer(c *gin.Context) {
+	userType := c.Writer.Header().Get("role")
+	if userType != "customer" {
+		log.Error().Any("user_type", userType).Any("auth_id", c.Writer.Header().Get("auth_id")).
+			Any("action", "handlers_customer.go_GetCustomer").Msg("unauthorized user")
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized user"})
+		return
+	}
+
+	id := c.Param("id")
+	if id == "" {
+		log.Error().Any("id", id).Any("action", "db_customer.go_GetCustomer").
+			Msg("id not found")
+		return
+	}
+
+	customerID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Any("customer_id", id).Any("action", "handlers_customer.go_GetCustomer").
+			Msg("error in converting id string to int64 ")
+		c.JSON(http.StatusNotFound, gin.H{"message": "error in converting id "})
+		return
+	}
+
+	customer, err := db.GetCustomer(customerID)
+	if err != nil {
+		log.Error().Err(err).Any("id", id).Any("action", "handlers_customer.go_GetCustomer").
+			Msg("error  in id not found")
+		c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+		return
+	}
+
+	address, err := db.GetAddress(customer.AddressID)
+	if err != nil {
+		log.Error().Err(err).Any("id", id).Any("action", "handlers_customer.go_GetCustomer").
+			Msg("error  in id not found")
+		c.JSON(http.StatusNotFound, gin.H{"message": "not found"})
+		return
+	}
+
+	res := api.CustomerList{
+		Id:          customerID,
+		FirstName:   customer.FirstName,
+		LastName:    customer.LastName,
+		UserName:    customer.UserName,
+		PhoneNumber: customer.PhoneNumber,
+		DOB:         customer.DOB,
+		Email:       customer.Email,
+		AddressID: api.Address{
+			UserType:    address.UserType,
+			StreetNo:    address.StreetNo,
+			Area:        address.Area,
+			Place:       address.Place,
+			District:    address.District,
+			State:       address.State,
+			PinCode:     address.PinCode,
+			CreatedAt:   address.CreatedAt,
+			LastUpdated: address.LastUpdated,
+		},
+		CreatedAt:   address.CreatedAt,
+		LastUpdated: address.LastUpdated,
+	}
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": res})
 }

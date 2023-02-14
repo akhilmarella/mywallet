@@ -61,3 +61,14 @@ func AddAddress(address models.Address) error {
 
 	return nil
 }
+
+func GetAddress(id int64) (*models.Address, error) {
+	var address models.Address
+	tx := DB.Raw("select * from addresses where id = ? ", id).Scan(&address)
+	if tx.Error != nil {
+		log.Error().Err(tx.Error).Any("id", id).
+			Any("action", "db_address.go_GetAddress").Msg("error in reading address details")
+		return nil, tx.Error
+	}
+	return &address, nil
+}

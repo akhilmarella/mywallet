@@ -25,8 +25,10 @@ func main() {
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
 	router.POST("/vendor-register", handlers.VendorRegister)
+	router.GET("/vendor/:id", middleware.IsAuthorized(), handlers.GetVendor)
 
 	router.POST("/customer-register", handlers.CustomerRegister)
+	router.GET("/customer/:id", middleware.IsAuthorized(), handlers.GetCustomer)
 
 	router.POST("/address-register", middleware.IsAuthorized(), handlers.AddressRegister)
 
