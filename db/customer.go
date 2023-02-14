@@ -38,3 +38,14 @@ func AddCustomer(customer models.Customer) (int64, error) {
 
 	return customer.ID, nil
 }
+
+func GetCustomer(id int64) (*models.Customer, error) {
+	var customer models.Customer
+	tx := DB.Raw("select * from customers where id = ? ", id).Scan(&customer)
+	if tx.Error != nil {
+		log.Error().Err(tx.Error).Any("customer_id", id).Any("action", "db_customer.go_GetCustomer").
+			Msg("error in reading customer details")
+		return nil, tx.Error
+	}
+	return &customer, nil
+}

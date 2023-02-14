@@ -23,7 +23,7 @@ func AddVendor(vendor models.Vendor) (int64, error) {
 
 	if check.Email != "" {
 		log.Error().Any("email", check).
-		Any("action:", "db_vendor.go_AddVendor").
+			Any("action:", "db_vendor.go_AddVendor").
 			Msg("email already registered")
 		return 0, fmt.Errorf("email is already exist :%v", check.Email)
 	}
@@ -31,10 +31,21 @@ func AddVendor(vendor models.Vendor) (int64, error) {
 	tx := DB.Create(&vendor).Model(models.Vendor{}).Scan(&vendor)
 	if tx.Error != nil {
 		log.Error().Err(tx.Error).Any("vendor", vendor).
-		Any("action:", "db_vendor.go_AddVendor").
+			Any("action:", "db_vendor.go_AddVendor").
 			Msg("error in creating user")
 		return 0, tx.Error
 	}
 
 	return vendor.ID, nil
+}
+
+func GetVendor(id int64) (*models.Vendor, error) {
+	var vendor models.Vendor
+	tx := DB.Raw("select * from vendors where id = ? ", id).Scan(&vendor)
+	if tx.Error != nil {
+		log.Error().Err(tx.Error).Any("vendor_id", id).Any("action", "db_vendor.go_GetVendor").
+			Msg("error in reading vendor details")
+		return nil, tx.Error
+	}
+	return &vendor, nil
 }
