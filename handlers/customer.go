@@ -162,5 +162,6 @@ func GetCustomer(c *gin.Context) {
 		CreatedAt:   address.CreatedAt,
 		LastUpdated: address.LastUpdated,
 	}
+	
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": res})
 }

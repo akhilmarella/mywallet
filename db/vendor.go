@@ -47,5 +47,6 @@ func GetVendor(id int64) (*models.Vendor, error) {
 			Msg("error in reading vendor details")
 		return nil, tx.Error
 	}
+	
 	return &vendor, nil
 }
