@@ -15,3 +15,4 @@ type Address struct {
 	CreatedAt   time.Time
 	LastUpdated time.Time
 }
+

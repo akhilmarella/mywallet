@@ -32,6 +32,8 @@ func main() {
 
 	router.POST("/address-register", middleware.IsAuthorized(), handlers.AddressRegister)
 
+	router.POST("/wallet-register", middleware.IsAuthorized(), handlers.AddWalletRegister)
+
 	router.POST("/login", handlers.Login)
 	router.PUT("/reset", middleware.IsAuthorized(), handlers.ResetPassword)
 	router.POST("/refresh", handlers.RefreshToken)

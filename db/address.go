@@ -8,7 +8,6 @@ import (
 )
 
 func AddAddress(address models.Address) error {
-
 	address.CreatedAt = time.Now()
 
 	tx := DB.Create(&address).Model(models.Address{}).Scan(&address)
@@ -20,7 +19,7 @@ func AddAddress(address models.Address) error {
 	}
 
 	type details struct {
-		accountID int64
+		AccountID int64
 	}
 
 	var det details
@@ -35,10 +34,11 @@ func AddAddress(address models.Address) error {
 
 	if address.UserType == "customer" {
 		var customer *models.Customer
-		em := DB.Model(&customer).Where("id = ?", address.ID).UpdateColumn(models.Customer{AddressID: address.ID})
+		em := DB.Model(&customer).Where("id = ?", address.ID).
+			UpdateColumn(models.Customer{AddressID: det.AccountID})
 		//	em := DB.Raw("update customers set address_id = ? where id = ? ", address.ID, det.accountID)
 		if em.Error != nil {
-			log.Error().Err(em.Error).Any("id", address.ID).Any("auth_id", det.accountID).
+			log.Error().Err(em.Error).Any("id", address.ID).Any("auth_id", det.AccountID).
 				Any("acion:", "db_address.go_AddAddress").
 				Msg("error in updating customers for adding address")
 			return em.Error
@@ -48,10 +48,11 @@ func AddAddress(address models.Address) error {
 
 	if address.UserType == "vendor" {
 		var vendor *models.Vendor
-		em := DB.Model(&vendor).Where("id = ?", address.ID).UpdateColumn(models.Vendor{AddressID: address.ID})
+		em := DB.Model(&vendor).Where("id = ?", address.ID).
+			UpdateColumn(models.Vendor{AddressID: det.AccountID})
 		//	em := DB.Exec("update vendors set address_id = ? where id = ? ", address.ID, det.accountID)
 		if em.Error != nil {
-			log.Error().Err(em.Error).Any("id", address.ID).Any("auth_id", det.accountID).
+			log.Error().Err(em.Error).Any("id", address.ID).Any("auth_id", det.AccountID).
 				Any("acion:", "db_address.go_AddAddress").
 				Msg("error in updating vendors for adding address")
 			return em.Error

@@ -87,3 +87,20 @@ func ChangePassword(email, password, role string) error {
 
 	return nil
 }
+
+func GetAccountID(id int64) (int64, error) {
+	type account struct {
+		AccountID int64
+	}
+
+	var det account
+
+	tx := DB.Raw("select account_id from auth_details where id = ? ", id).Scan(&det)
+	fmt.Println("account id **", det.AccountID)
+	if tx.Error != nil {
+		log.Error().Err(tx.Error).Any("id", id).Any("action", "db_auth.go_GetAccountID").
+			Msg("error in getting account id from auth details")
+		return 0, tx.Error
+	}
+	return det.AccountID, nil
+}

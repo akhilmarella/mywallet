@@ -25,7 +25,7 @@ func IsAuthorized() gin.HandlerFunc {
 			if err != nil {
 				log.Error().Err(err).Any("token", token).
 					Any("action:", "middleware_token.go_IsAuthorized").
-					Msg("error in invalid ttoken")
+					Msg("error in invalid token")
 				c.Abort()
 			}
 
@@ -35,7 +35,7 @@ func IsAuthorized() gin.HandlerFunc {
 
 					if !ok {
 						log.Error().Any("user_id", authID_f).
-					Any("action:", "middleware_token.go_IsAuthorized").
+							Any("action:", "middleware_token.go_IsAuthorized").
 							Msg("user id not found")
 						return
 					}
