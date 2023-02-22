@@ -24,15 +24,19 @@ func main() {
 	store.InitRedis()
 	router := gin.Default()
 	router.GET("/", handlers.HealthCheck)
+
 	router.POST("/vendor-register", handlers.VendorRegister)
 	router.GET("/vendor/:id", middleware.IsAuthorized(), handlers.GetVendor)
+	router.PUT("/vendor/:id", middleware.IsAuthorized(), handlers.UpdateVendor)
 
 	router.POST("/customer-register", handlers.CustomerRegister)
 	router.GET("/customer/:id", middleware.IsAuthorized(), handlers.GetCustomer)
+	router.PUT("/customer/:id", middleware.IsAuthorized(), handlers.UpdateCustomer)
 
-	router.POST("/address-register", middleware.IsAuthorized(), handlers.AddressRegister)
+	router.POST("/address", middleware.IsAuthorized(), handlers.AddAddress)
+	router.PUT("/address/:id", middleware.IsAuthorized(), handlers.UpdateAddress)
 
-	router.POST("/wallet-register", middleware.IsAuthorized(), handlers.AddWalletRegister)
+	router.POST("/wallet", middleware.IsAuthorized(), handlers.AddWallet)
 
 	router.POST("/login", handlers.Login)
 	router.PUT("/reset", middleware.IsAuthorized(), handlers.ResetPassword)

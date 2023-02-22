@@ -47,6 +47,54 @@ func GetVendor(id int64) (*models.Vendor, error) {
 			Msg("error in reading vendor details")
 		return nil, tx.Error
 	}
-	
+
 	return &vendor, nil
+}
+
+func UpdateVendor(vendor models.Vendor) (*models.Vendor, error) {
+	var currentVendor models.Vendor
+
+	tx := DB.Raw("select * from vendors where id = ? ", vendor.ID).Scan(&currentVendor)
+	if tx.Error != nil && tx.Error != gorm.ErrRecordNotFound {
+		log.Error().Err(tx.Error).Any("id", vendor.ID).Any("action", "db_vendor.go_UpdateVendor").
+			Msg("user not found")
+		return nil, tx.Error
+	}
+
+	if vendor.CompanyName == "" {
+		vendor.CompanyName = currentVendor.CompanyName
+	}
+
+	if vendor.Name == "" {
+		vendor.Name = currentVendor.Name
+	}
+
+	if vendor.Email == "" {
+		vendor.Email = currentVendor.Email
+	}
+
+	if vendor.PhoneNumber == "" {
+		vendor.PhoneNumber = currentVendor.PhoneNumber
+	}
+
+	vendor.AddressID = currentVendor.AddressID
+	vendor.LastUpdated = time.Now()
+
+	em := DB.Save(&vendor)
+	if em.Error != nil {
+		log.Error().Err(em.Error).Any("vendor_details", vendor).
+			Any("action", "db_vendor.go_UpdateVendor").Msg("error in updating vendor details")
+		return nil, em.Error
+	}
+
+	return &models.Vendor{
+		ID:          vendor.ID,
+		CompanyName: vendor.CompanyName,
+		Name:        vendor.Name,
+		Email:       vendor.Email,
+		PhoneNumber: vendor.PhoneNumber,
+		AddressID:   vendor.AddressID,
+		CreatedAt:   vendor.CreatedAt,
+		LastUpdated: vendor.LastUpdated,
+	}, nil
 }

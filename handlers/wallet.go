@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func AddWalletRegister(c *gin.Context) {
+func AddWallet(c *gin.Context) {
 	userType := c.Writer.Header().Get("role")
 	if userType == "" {
 		log.Error().Any("user_type", userType).Any("action", "handlers_wallet.go_AddWalletRegister").

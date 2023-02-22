@@ -49,3 +49,61 @@ func GetCustomer(id int64) (*models.Customer, error) {
 	}
 	return &customer, nil
 }
+
+func UpdateCustomer(customer models.Customer) (*models.Customer, error) {
+	var currentCustomer models.Customer
+
+	tx := DB.Raw("select * from customers where id = ? ", customer.ID).Scan(&currentCustomer)
+	if tx.Error != nil && tx.Error != gorm.ErrRecordNotFound {
+		log.Error().Err(tx.Error).Any("id", customer.ID).Any("action", "db_customer.go_UpdateCustomer").
+			Msg("user not found")
+		return nil, tx.Error
+	}
+
+	if customer.FirstName == "" {
+		customer.FirstName = currentCustomer.FirstName
+	}
+
+	if customer.LastName == "" {
+		customer.LastName = currentCustomer.LastName
+	}
+
+	if customer.UserName == "" {
+		customer.UserName = currentCustomer.UserName
+	}
+
+	if customer.Email == "" {
+		customer.Email = currentCustomer.Email
+	}
+
+	if customer.PhoneNumber == "" {
+		customer.PhoneNumber = currentCustomer.PhoneNumber
+	}
+
+	if customer.DOB == "" {
+		customer.DOB = currentCustomer.DOB
+	}
+	customer.AddressID = currentCustomer.AddressID
+	customer.LastUpdated = time.Now()
+	//em := DB.Model(models.Customer{}).Save(&currentCustomer)
+	em := DB.Save(&customer)
+	if em.Error != nil {
+		log.Error().Err(em.Error).Any("coustmer_details", customer).
+			Any("action", "db_customer.go_updateCustomer").
+			Msg("error in updating customer details")
+		return nil, em.Error
+	}
+
+	return &models.Customer{
+		ID:          customer.ID,
+		FirstName:   customer.FirstName,
+		LastName:    customer.LastName,
+		UserName:    customer.UserName,
+		Email:       customer.Email,
+		PhoneNumber: customer.PhoneNumber,
+		DOB:         customer.DOB,
+		AddressID:   customer.AddressID,
+		CreatedAt:   customer.CreatedAt,
+		LastUpdated: customer.LastUpdated,
+	}, nil
+}

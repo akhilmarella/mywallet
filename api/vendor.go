@@ -21,3 +21,10 @@ type VendorList struct {
 	CreatedAt   time.Time `json:"created_at"`
 	LastUpdated time.Time `json:"last_updated"`
 }
+
+type VendorUpdate struct{
+	CompanyName string    `json:"company_name"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phone_number"`
+}

@@ -34,7 +34,7 @@ func IsAuthorized() gin.HandlerFunc {
 					authID_f, ok := claims["auth_id"].(float64)
 
 					if !ok {
-						log.Error().Any("user_id", authID_f).
+						log.Error().Any("auth_id", authID_f).
 							Any("action:", "middleware_token.go_IsAuthorized").
 							Msg("user id not found")
 						return

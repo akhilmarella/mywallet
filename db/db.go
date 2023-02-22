@@ -23,7 +23,7 @@ func InitDB(conf config.Configuration) {
 		conf.Db.Password,
 	))
 	if err != nil {
-		log.Error().Err(err).Msg("DB init fail")
+		log.Error().Err(err).Any("action", "db_db.go_InitDB").Msg("DB init fail")
 		os.Exit(1)
 	}
 	err = db.Debug().AutoMigrate(models.Vendor{}, models.AuthDetails{}, models.Customer{},
