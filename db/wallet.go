@@ -33,12 +33,13 @@ func AddWallet(wallet models.Wallet) error {
 
 		tx := DB.Save(&currentWallet)
 		if tx.Error != nil {
-			log.Error().Err(tx.Error).Any("previous_money", currentWallet.UserID).
+			log.Error().Err(tx.Error).Any("previous_money", currentWallet.TotalMoney).
+				Any("user_id", currentWallet.UserID).
 				Any("action", "db_wallet.go_AddWallet").
 				Msg("error in adding money  ")
 			return tx.Error
 		}
-		
+
 		return nil
 	}
 

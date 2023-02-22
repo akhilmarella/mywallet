@@ -22,3 +22,12 @@ type Address struct {
 	CreatedAt   time.Time `json:"created_at"`
 	LastUpdated time.Time `json:"last_updated"`
 }
+
+type AddressUpdate struct {
+	StreetNo string `json:"street_no"`
+	Area     string `json:"area"`
+	Place    string `json:"place"`
+	District string `json:"district"`
+	State    string `json:"state"`
+	PinCode  int    `json:"pin_code"`
+}

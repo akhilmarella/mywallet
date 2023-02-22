@@ -10,6 +10,7 @@ import (
 )
 
 func AddAuth(auth models.AuthDetails) error {
+
 	auth.CreatedAt = time.Now()
 	tx := DB.Create(&auth).Model(models.AuthDetails{})
 	if tx.Error != nil {
@@ -19,6 +20,23 @@ func AddAuth(auth models.AuthDetails) error {
 		return tx.Error
 	}
 
+	return nil
+}
+
+func CheckEmail(email string) error {
+	var check models.AuthDetails
+	tx := DB.Raw("select  * from auth_details where email = ? ", email).Scan(&check)
+	if tx.Error != nil && tx.Error != gorm.ErrRecordNotFound {
+		log.Error().Err(tx.Error).Any("email ", email).Any("action", "db_auth.go_CheckEmail").
+			Msg("error in fetching deatils")
+		return tx.Error
+	}
+
+	if email == check.Email {
+		log.Error().Any("old_email", check.Email).Any("new_email", email).Any("action", "db_auth.go_CheckEmail").
+			Msg("email already registered")
+		return fmt.Errorf("email already exist")
+	}
 	return nil
 }
 
@@ -104,3 +122,5 @@ func GetAccountID(id int64) (int64, error) {
 	}
 	return det.AccountID, nil
 }
+
+

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"mywallet/api"
+	"mywallet/constants"
 	"mywallet/db"
 	"mywallet/models"
 	"mywallet/utils"
@@ -41,6 +42,18 @@ func VendorRegister(c *gin.Context) {
 		return
 	}
 
+	for range constants.BlackListedEmails {
+		value, ok := constants.BlackListedEmails[req.Email]
+		if ok {
+			if value {
+				log.Error().Any("email", req.Email).Any("action", "handlers_vendor.go_VendorRegister").
+					Msg("email is in black list")
+				c.JSON(http.StatusNotAcceptable, gin.H{"message": "email is in black list"})
+				return
+			}
+		}
+	}
+
 	if len(req.Password) <= 8 || len(req.Password) >= 14 {
 		log.Error().Any("password", req.Password).
 			Any("action:", "handlers_vendor.go_VendorRegister").
@@ -64,6 +77,15 @@ func VendorRegister(c *gin.Context) {
 			Any("action:", "handlers_vendor.go_VendorRegister").
 			Msg("password is not valid")
 		c.JSON(http.StatusBadRequest, gin.H{"message": "password is not valid"})
+		return
+	}
+
+	err := db.CheckEmail(req.Email)
+	if err != nil {
+		log.Error().Err(err).Any("email", req.Email).Any("user_type", "vendor").
+			Any("action", "handlers_vendor.go_VendorRegister").
+			Msg("email already registered")
+		c.JSON(http.StatusBadRequest, gin.H{"message": "email already exist"})
 		return
 	}
 
@@ -112,6 +134,7 @@ func GetVendor(c *gin.Context) {
 	if id == "" {
 		log.Error().Any("id", id).Any("action", "db_vendor.go_GetVendor").
 			Msg("id not found")
+		c.JSON(http.StatusBadRequest, gin.H{"mesaage": "id not found"})
 		return
 	}
 
@@ -159,5 +182,96 @@ func GetVendor(c *gin.Context) {
 		CreatedAt:   vendor.CreatedAt,
 		LastUpdated: vendor.LastUpdated,
 	}
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": res})
+}
+
+func UpdateVendor(c *gin.Context) {
+	userType := c.Writer.Header().Get("role")
+	if userType != "vendor" {
+		log.Error().Any("user_type", userType).Any("auth_id", c.Writer.Header().Get("auth_id")).
+			Any("action", "handlers_vendor.go_UpdateVendor").Msg("unauthorized user")
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized user"})
+		return
+	}
+
+	id := c.Param("id")
+	if id == "" {
+		log.Error().Any("id", id).Any("action", "db_vendor.go_UpdateVendor").
+			Msg("id not found")
+		c.JSON(http.StatusBadRequest, gin.H{"mesaage": "id not found"})
+		return
+	}
+
+	vendorID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Any("vendor_id", id).Any("action", "handlers_vendor.go_UpdateVendor").
+			Msg("error in converting id string to int64 ")
+		c.JSON(http.StatusNotFound, gin.H{"message": "error in converting id "})
+		return
+	}
+
+	var change api.VendorUpdate
+	if err := c.BindJSON(&change); err != nil {
+		log.Error().Err(err).Any("vendor_details", change).Any("action", "handlers_vendor.go_UpdateVendor").
+			Msg("error in unmarshaling")
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error in unmarshalling "})
+		return
+	}
+
+	if change.Email != "" {
+		valid := utils.ValidateEmail(change.Email)
+		if !valid {
+			log.Error().Any("email", change.Email).Any("action", "handers_vendor.go_UpdateVendor").
+				Msg("email is not valid")
+			c.JSON(http.StatusBadRequest, gin.H{"message": "email not valid"})
+			return
+		}
+
+		for range constants.BlackListedEmails {
+			value, ok := constants.BlackListedEmails[change.Email]
+			if ok {
+				if value {
+					log.Error().Any("email", change.Email).Any("action", "handlers_vendor.go_UpdateVendor").
+						Msg("email is in black list")
+					c.JSON(http.StatusNotAcceptable, gin.H{"message": "email is in black list"})
+					return
+				}
+			}
+		}
+
+		err = db.CheckEmail(change.Email)
+		if err != nil {
+			log.Error().Err(err).Any("email", change.Email).Any("user_type", userType).
+				Any("action", "handlers_vendor.go_UpdateVendor").
+				Msg("email already registered")
+			c.JSON(http.StatusBadRequest, gin.H{"message": "email already exist"})
+			return
+		}
+	}
+
+	if change.PhoneNumber != "" {
+		if len(change.PhoneNumber) != 10 {
+			log.Error().Any("phone_number", change.PhoneNumber).
+				Any("action", "handlers_vendor.go_UpdateVendor").
+				Msg("phone number is not valid")
+			c.JSON(http.StatusBadRequest, gin.H{"message": "phone number is not valid"})
+			return
+		}
+	}
+
+	var vendor models.Vendor
+	vendor.ID = vendorID
+	vendor.CompanyName = change.CompanyName
+	vendor.Name = change.Name
+	vendor.Email = change.Email
+	vendor.PhoneNumber = change.PhoneNumber
+
+	res, err := db.UpdateVendor(vendor)
+	if err != nil {
+		log.Error().Err(err).Any("vendor_details", res).Any("action", "handlers_vendor.go_UpdateVendor").
+			Msg("error in updating vendor")
+		return
+	}
+
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": res})
 }
